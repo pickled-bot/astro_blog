@@ -1,6 +1,7 @@
 from app import db
 from datetime import datetime
 
+
 class Post(db.Model):
   id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   date = db.Column(db.DateTime(timezone=True), default=datetime.astimezone)

@@ -29,7 +29,7 @@ def manage_posts():
   else:
     posts = Post.query.all()
   
-  posts_response = [post.to_dictionart() for post in posts]
+  posts_response = [post.to_dictionary() for post in posts]
 
   return jsonify(posts_response)
 

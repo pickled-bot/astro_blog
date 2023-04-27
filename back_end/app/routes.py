@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response, abort
 from app import db
 from .models.post import Post
+import datetime
 
 
 blogs_bp = Blueprint("blogs_bp", __name__, url_prefix="/posts")
@@ -8,8 +9,9 @@ blogs_bp = Blueprint("blogs_bp", __name__, url_prefix="/posts")
 @blogs_bp.route("", methods = ["POST"])
 def handle_posts():
   request_body = request.get_json()
+  current_date = datetime.datetime.now()
   new_post = Post(
-    date = request_body["date"],
+    date = current_date,
     title = request_body["title"],
     body = request_body["body"]
   )

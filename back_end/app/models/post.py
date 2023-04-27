@@ -3,17 +3,17 @@ from datetime import datetime
 
 
 class Post(db.Model):
-  id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-  date = db.Column(db.DateTime(timezone=True), default=datetime.astimezone)
+  post_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+  date = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
   title = db.Column(db.String, nullable=False)
   body = db.Column(db.String)
 
   def to_string(self):
-    return f"{self.id}: [{self.date}], {self.title}, Body: {self.body}"
+    return f"{self.post_id}: [{self.date}], {self.title}, Body: {self.body}"
 
   def to_dictionary(self):
     return dict(
-      id = self.id,
+      post_id = self.post_id,
       date = self.date,
       title = self.title,
       body = self.body)

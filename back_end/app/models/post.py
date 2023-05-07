@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Post(db.Model):
-  post_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+  id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   date = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
   title = db.Column(db.String, nullable=False)
   body = db.Column(db.String)
@@ -13,7 +13,7 @@ class Post(db.Model):
 
   def to_dictionary(self):
     return dict(
-      post_id = self.post_id,
+      post_id = self.id,
       date = self.date,
       title = self.title,
       body = self.body)

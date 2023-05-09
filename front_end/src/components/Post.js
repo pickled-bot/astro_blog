@@ -1,15 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import "../style/Board.css";
+import "../style/post.css";
 
 const Post = ({postid, date, title, body, onSelectPost}) => {
   const onTitleClick = () => {
-    onSelectPost(postid, title);
+    onSelectPost(postid, date, title, body);
   }
   
   return (
     <section className = "Post">
-      <h2 onClick = {onTitleClick}>{title}</h2>
+      <h2 onClick = {onTitleClick}> {date} : {title}</h2>
+      <p>{body}</p>
     </section>
   );
 };

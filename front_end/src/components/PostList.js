@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Post from './Post';
-import '../style/PostList.css';
+import Post from './Post.js';
+import '../style/postList.css';
 
 const PostList = ({posts, onSelectPost}) => {
   const postComponents = posts.map((post) => {
@@ -16,7 +16,7 @@ const PostList = ({posts, onSelectPost}) => {
       />
     );
   });
-  return <selection className="PostList">{postComponents}</selection>;
+  return <section className="PostList">{postComponents}</section>;
 };
 
 PostList.propTypes = {

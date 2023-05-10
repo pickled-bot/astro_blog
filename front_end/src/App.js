@@ -14,7 +14,7 @@ const postApiToJson = (post) => {
 const getPostData = () => {
   return axios
     .get(`${baseUrl}/posts`)
-    .then((response) => {
+    .then((response) => { 
       return response.data.map(postApiToJson);
     })
     .catch((error) => {

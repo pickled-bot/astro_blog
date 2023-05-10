@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -11,7 +11,7 @@ load_dotenv()
 
 def create_app(test_config=None):
   print(os.getcwd())
-  app = Flask(__name__)
+  app = Flask(__name__, static_url_path='/app')
 
   if not test_config:
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -38,6 +38,10 @@ def create_app(test_config=None):
     os.makedirs(app.instance_path)
   except OSError:
     pass
+
+  @app.route('/')
+  def index():
+    return render_template('index.html');
 
   return app
 

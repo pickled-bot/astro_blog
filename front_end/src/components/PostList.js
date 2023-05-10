@@ -4,6 +4,7 @@ import Post from './Post.js';
 import '../style/postList.css';
 
 const PostList = ({posts, onSelectPost}) => {
+  if (!posts) return <div>loading...</div>;
   const postComponents = posts.map((post) => {
     return (
       <Post

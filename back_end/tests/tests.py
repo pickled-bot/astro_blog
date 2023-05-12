@@ -1,101 +1,126 @@
-import unittest
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from app import create_app
 from app.models.post import Post
+from app import create_app, db
+import pytest
 
-class CRUDTests(unittest.TestCase):
-    
-  def setUp(self):
-    #set up flask app and test client
-    self.app = create_app()
-    self.app.config['TESTING'] = True
-    self.client = self.app.test_client()
 
-    #set up database
-    self.db = SQLAlchemy(self.app)
-    self.db.create_all()
-  
-  def tearDown(self):
-    #clean up database
-    self.db.session.remove()
-    self.db.drop_all()
-  
-  # #GET all posts
-  # def test_get_all_posts(self):
-  #   #act
-  #   response = self.client.get("/posts")
-  #   response_body = response.get_json()
 
-  #   #assert 
-  #   assert response.status_code == 200
-  #   self.assertEqual(len(response_body), 0)
+@pytest.fixture
+def client():
+  app = create_app()
+  app.config['TESTING'] = True
+  with app.app_context():
+    with app.test_client() as client:
+      yield client
 
-  #GET post by id
-  def test_get_post_by_id(self):
-    post = Post(date='Mon, 23 Aug 2021 07:00:00 GMT', title='mercury is gatorade', body='a blog post about planets in gatorade.')
-    self.db.session.add(post)
-    self.db.session.commit()
+@pytest.fixture
+def one_post():
+  post = Post(
+    date = "Wed, 01 Jan 2020 00:00:00 GMT",
+    title = "mercury is gatorade",
+    body = "about planets in gatorade"
+  )
+  db.session.add(post)
+  db.session.commit()
+  yield
+  db.session.delete(post)
+  db.session.commit()
 
-    #act
-    response = self.client.get(f'/posts/{post.id}')
-    self.assertEqual(response.status_code, 200)
-    post_data = response.get_json()
-    self.assertEqual(post_data['title'], 'mercury is gatorade')
-    self.assertEqual(post_data['body'], 'a blog post about planets in gatorade.')
-    self.assertEqual(post_data['date'], 'Mon, 23 Aug 2021 07:00:00 GMT')
+def tear_down():
+  db.session.remove()
+  db.drop_all()
 
-  #POST post
-  def test_create_post(self):
-    post_data = {
-      "date": "Mon, 23 Aug 2021 07:00:00 GMT",
-      "title": "mercury is gatorade",
-      "body": "a blog post about planets in gatorade."
+@pytest.mark.usefixtures("client", "one_post")
+def test_get_posts_no_saved_posts(client):
+  #act
+  response = client.get("/posts")
+  response_body = response.get_json()
+
+  #assert
+  assert response.status_code == 200
+  assert response_body == []
+
+@pytest.mark.usefixtures("client", "one_post")
+def test_get_posts_one_saved_post(client):
+  #act
+  response = client.get("/posts")
+  response_body = response.get_json()
+
+  #assert
+  assert response.status_code == 200
+  assert len(response_body) == 1
+  assert response_body == [{
+    "post_id": 1,
+    "date": "Wed, 01 Jan 2020 00:00:00 GMT",
+    "title": "mercury is gatorade",
+    "body": "about planets in gatorade"
+  }]
+
+@pytest.mark.usefixtures("client")
+def test_create_post(client):
+  #act
+  response = client.post('/posts', json={
+    "title": "mercury is gatorade",
+    "body": "about planets in gatorade"
+  })
+  response_body = response.get_json()
+  #assert
+  assert response.status_code == 201
+  assert "post" in response_body
+  new_post = Post.query.first()
+  assert new_post
+  assert response_body == f"post {new_post.title} successful"
+  assert new_post.title == "mercury is gatorade"
+  assert new_post.body == "a blog post about planets in gatorade."
+
+@pytest.mark.usefixtures("client", "one_post")
+def test_get_post_by_id(client):
+  #act
+  response = client.get("/posts/1")
+  response_body = response.get_json()
+
+  assert response.status_code == 200
+  assert "post" in response_body
+  assert response_body == {
+  "post": {
+    "post_id": 1,
+    "date": "Wed, 01 Jan 2020 00:00:00 GMT",
+    "title": "mercury is gatorade",
+    "body": "about planets in gatorade"
     }
-    response = self.client.post('/posts', json=post_data)
-    self.assertEqual(response.status_code, 201)
-    self.assertIn(f'Post {post_data["title"]} successful', response.get_data(as_text=True))
-  
-  #PUT post
-  def test_update_post(self):
-    post = Post(date='Mon, 23 Aug 2021 07:00:00 GMT', title='mercury is gatorade', body='a blog post about planets in gatorade.')
-    self.db.session.add(post)
-    self.db.session.commit()
+  }
 
-    updated_data = {
-      "date": "Mon, 23 Aug 2021 07:00:00 GMT",
-      "title": "mercury is retograde",
-      "body": "a blog post about planets in retograde."
-    }
-    response = self.client.patch(f'/posts/{post.id}', json=updated_data)
-    self.assertEqual(response.status_code, 200)
-    post_data = response.get_json()
-    self.assertEqual(post_data['title'], 'mercury is retograde')
-    self.assertEqual(post_data['body'], 'a blog post about planets in retograde.')
-    self.assertEqual(post_data['date'], 'Mon, 23 Aug 2021 07:00:00 GMT')
+@pytest.mark.usefixtures("client", "one_post")
+def test_delete_post_by_id(client):
+  #act
+  response = client.delete("/posts/1")
+  response_body = response.get_json()
 
-    #retrieve
-    response = self.client.get(f'/posts/{post.id}')
-    self.assertEqual(response.status_code, 200)
-    post_data = response.get_json()
-    self.assertEqual(post_data['title'], 'mercury is retograde')
-    self.assertEqual(post_data['body'], 'a blog post about planets in retograde.')
-    self.assertEqual(post_data['date'], 'Mon, 23 Aug 2021 07:00:00 GMT')
+  #assert
+  assert response.status_code == 200
+  assert "message" in response_body
+  assert response_body["message"] == f'post 1 "mercury is gatorade" successfully deleted'
 
-  #DELETE post
-  def test_delete_post(self):
-    post = Post(date='Mon, 23 Aug 2021 07:00:00 GMT', title='mercury is gatorade', body='a blog post about planets in gatorade.')
-    self.db.session.add(post)
-    self.db.session.commit()
+@pytest.mark.usefixtures("client")
+def test_get_board_not_found(client):
+  #act
+  response = client.get("/posts/1")
+  response_body = response.get_json()
 
-    #act
-    response = self.client.delete(f'/posts/{post.id}')
-    self.assertEqual(response.status_code, 200)
-    self.assertIn(f'Post {post.title} successfully deleted', response.get_data(as_text=True))
+  #assert
+  assert response.status_code == 404
+  assert "message" in response_body
+  assert response_body["message"] == "post 1 not found"
 
-    # #verify
-    # deleted_post = Post.query.get(post.id)
-    # self.assertIsNone(deleted_post)
+@pytest.mark.usefixtures("client")
+def test_get_board_bad_data(client):
+  #act
+  response = client.get("/posts/one")
+  response_body = response.get_json()
 
-if __name__ == '__main__':
-  unittest.main()
+  #assert
+  assert response.status_code == 400
+  assert "message" in response_body
+  assert response_body["message"] == "post one invalid"
+
+def pytest_sessionfinish(session, exitstatus):
+  tear_down()

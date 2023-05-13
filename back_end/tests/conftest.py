@@ -21,7 +21,6 @@ def session(app):
     yield db.session
     db.session.rollback()
 
-
 def tear_down():
   db.session.remove()
   db.drop_all()

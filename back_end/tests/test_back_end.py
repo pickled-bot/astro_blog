@@ -1,35 +1,48 @@
 from app.models.post import Post
 from app import create_app, db
 import pytest
-
-
+from conftest import app, client, session, tear_down
 
 @pytest.fixture
-def client():
-  app = create_app()
+def app():
+  app = create_app('test')
   app.config['TESTING'] = True
   with app.app_context():
-    with app.test_client() as client:
-      yield client
+    db.create_all()
+    yield app
+    db.drop_all()
+
 
 @pytest.fixture
-def one_post():
-  post = Post(
-    date = "Wed, 01 Jan 2020 00:00:00 GMT",
-    title = "mercury is gatorade",
-    body = "about planets in gatorade"
-  )
-  db.session.add(post)
-  db.session.commit()
-  yield
-  db.session.delete(post)
-  db.session.commit()
+def client(app):
+  with app.test_client() as client:
+    with app.app_context():
+      db.session.begin_nested()
+      yield client
+      db.session.rollback()
 
-def tear_down():
+
+@pytest.fixture
+def one_post(app):
+  with app.app_context():
+    post = Post(
+      date = "Wed, 01 Jan 2020 00:00:00 GMT",
+      title = "mercury is gatorade",
+      body = "about planets in gatorade"
+    )
+    db.session.add(post)
+    db.session.commit()
+    yield
+    db.session.delete(post)
+    db.session.commit()
+
+
+@pytest.fixture
+def tear_down(autouse=True):
   db.session.remove()
   db.drop_all()
 
-@pytest.mark.usefixtures("client", "one_post")
+@pytest.mark.usefixtures("client")
 def test_get_posts_no_saved_posts(client):
   #act
   response = client.get("/posts")
@@ -40,7 +53,7 @@ def test_get_posts_no_saved_posts(client):
   assert response_body == []
 
 @pytest.mark.usefixtures("client", "one_post")
-def test_get_posts_one_saved_post(client):
+def test_get_posts_one_saved_post(client, one_post):
   #act
   response = client.get("/posts")
   response_body = response.get_json()
@@ -56,7 +69,7 @@ def test_get_posts_one_saved_post(client):
   }]
 
 @pytest.mark.usefixtures("client")
-def test_create_post(client):
+def test_create_post(client, one_post):
   #act
   response = client.post('/posts', json={
     "title": "mercury is gatorade",
@@ -73,7 +86,7 @@ def test_create_post(client):
   assert new_post.body == "a blog post about planets in gatorade."
 
 @pytest.mark.usefixtures("client", "one_post")
-def test_get_post_by_id(client):
+def test_get_post_by_id(client, one_post):
   #act
   response = client.get("/posts/1")
   response_body = response.get_json()

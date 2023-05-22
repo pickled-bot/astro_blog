@@ -4,23 +4,24 @@ import axios from 'axios';
 // import Post from './components/Post';
 import PostList from './components/PostList';
 
-const baseUrl = "http://localhost:5000";
+const baseUrl = "http://localhost:8080";
 
 const postApiToJson = (post) => {
   const { date, title, body, post_id: postid } = post;
   return { date, title, body, postid };
 };
 
-const getPostData = () => {
-  return axios
-    .get(`${baseUrl}/posts`)
-    .then((response) => { 
-      return response.data.map(postApiToJson);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-};
+// consider something other than axios, what next.js uses
+// const getPostData = () => {
+//   return axios
+//     .get(`${baseUrl}/posts`)
+//     .then((response) => { 
+//       return response.data.map(postApiToJson);
+//     })
+//     .catch((error) => {
+//       console.log(error);
+//     });
+// };
 
 const sortPostData = (unsortedPosts, sortType) => {
   const unsortedPostsCopy = [...unsortedPosts];
@@ -46,14 +47,21 @@ const sortPostData = (unsortedPosts, sortType) => {
 
 function App() {
   const [postData, setPostData] = useState([]);
-
   let [postNum, setPostNum] = useState(0);
   let [postTitle, setPostTitle] = useState("");
-  let newText = '';
   
   useEffect(() => {
     loadPosts();
   }, []);
+
+  const getPostData = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/posts`);
+      return response.data.map([postApiToJson]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const loadPosts = () => {
     getPostData().then((posts) => {
@@ -105,7 +113,7 @@ function App() {
   const handlePostDataReady = (postName) => {
     addPostData(postName)
       .then((newPost) => {
-        loadPosts((oldData) => [...oldData, newPost]);
+        loadPosts();
       })
       .catch((error) => console.log(error));
   };

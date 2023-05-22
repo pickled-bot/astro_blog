@@ -19,7 +19,7 @@ def handle_posts():
   db.session.add(new_post)
   db.session.commit()
 
-  return make_response(jsonify(f'Post {new_post.title} successful'), 201)
+  return make_response(jsonify(f'post {new_post.title} successful'), 201)
 
 @blogs_bp.route("", methods=["GET"])
 def manage_posts():
@@ -62,7 +62,7 @@ def delete_post_by_id(post_id):
   db.session.delete(post)
   db.session.commit()
 
-  return make_response(jsonify(f"Post {post.title} successfully deleted."))
+  return make_response(jsonify(f"post {post.title} successfully deleted."))
 
 @blogs_bp.route("/<post_id>", methods=["PATCH"])
 def update_post_with_id(post_id):

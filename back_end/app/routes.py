@@ -1,10 +1,13 @@
 from flask import Blueprint, request, jsonify, make_response, abort, render_template
+from flask_cors import CORS
 from app import db
 from .models.post import Post
 import datetime
 
 
 blogs_bp = Blueprint("blogs_bp", __name__, url_prefix="/posts")
+
+CORS(blogs_bp)
 
 @blogs_bp.route("/")
 def index():

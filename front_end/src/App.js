@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import axios from 'axios';
-// import Post from './components/Post';
 import PostList from './components/PostList';
 
 const baseUrl = "http://localhost:8080";
@@ -11,22 +9,15 @@ const postApiToJson = (post) => {
   return { date, title, body, postid };
 };
 
-// consider something other than axios, what next.js uses
-// const getPostData = () => {
-//   return axios
-//     .get(`${baseUrl}/posts`)
-//     .then((response) => { 
-  //       return response.data.map(postApiToJson);
-  //     })
-  //     .catch((error) => {
-    //       console.log(error);
-    //     });
-    // };
     
 const getPostData = async () => {
   try {
-    const response = await axios.get(`${baseUrl}/posts`);
-    return response.data.map([postApiToJson]);
+    const response = await fetch(`${baseUrl}/posts`);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+    const data = await response.json();
+    return data.map(postApiToJson);
   } catch (error) {
     console.log(error);
   }
@@ -74,14 +65,20 @@ function App() {
   };
 
   const updatePostData = (updatedPost) => {
-    return axios
-    .patch(`${baseUrl}/posts/${updatedPost.postid}`)
-    .then((response) => {
-      return response;
-    })
-    .catch((error) => {
-    console.log(error);
-    });
+    return fetch(`${baseUrl}/posts/${updatedPost.postid}`, { 
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedPost)
+      })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
+      .catch((error) => console.log(error));
   };
 
 
@@ -94,21 +91,29 @@ function App() {
   };
 
   const onPostDelete = (postid) => {
-    return axios
-    .delete(`${baseUrl}/posts/${postid}`)
-    .then((response) => {
-      return response;
+
+    return fetch(`${baseUrl}/posts/${postid}`, {
+      method: 'DELETE'
     })
-    .catch((error) => {
-      console.log(error);
-    });
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      return response.json();
+    })
+    .catch((error) => console.log(error));
   };
 
   const addPostData = (addedPost) => {
     const requestBody = { ...addedPost };
 
-    return axios
-      .post(`${baseUrl}/posts`, requestBody)
+    return fetch(`${baseUrl}/posts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      })
       .then(() => loadPosts())
       .catch((error) => console.log(error));
   };

@@ -16,12 +16,21 @@ const postApiToJson = (post) => {
 //   return axios
 //     .get(`${baseUrl}/posts`)
 //     .then((response) => { 
-//       return response.data.map(postApiToJson);
-//     })
-//     .catch((error) => {
-//       console.log(error);
-//     });
-// };
+  //       return response.data.map(postApiToJson);
+  //     })
+  //     .catch((error) => {
+    //       console.log(error);
+    //     });
+    // };
+    
+const getPostData = async () => {
+  try {
+    const response = await axios.get(`${baseUrl}/posts`);
+    return response.data.map([postApiToJson]);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const sortPostData = (unsortedPosts, sortType) => {
   const unsortedPostsCopy = [...unsortedPosts];
@@ -54,20 +63,14 @@ function App() {
     loadPosts();
   }, []);
 
-  const getPostData = async () => {
+
+  const loadPosts = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/posts`);
-      return response.data.map([postApiToJson]);
+      const posts = await getPostData();
+      setPostData(posts);
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const loadPosts = () => {
-    getPostData().then((posts) => {
-      setPostData(posts);
-    })
-    .catch((error) => console.log(error));
   };
 
   const updatePostData = (updatedPost) => {

@@ -1,10 +1,14 @@
-from flask import Blueprint, request, jsonify, make_response, abort
+from flask import Blueprint, request, jsonify, make_response, abort, render_template
 from app import db
 from .models.post import Post
 import datetime
 
 
 blogs_bp = Blueprint("blogs_bp", __name__, url_prefix="/posts")
+
+@blogs_bp.route("/")
+def index():
+  return render_template("index.html")
 
 @blogs_bp.route("", methods = ["POST"])
 def handle_posts():

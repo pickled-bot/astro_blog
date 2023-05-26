@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import PostList from './components/PostList';
+import PostForm from './components/PostForm';
 
 const baseUrl = "http://localhost:8080";
 
@@ -139,7 +140,10 @@ function App() {
       </header>
 
       <main>
-        <div>
+        <div className="postContainer">
+          <PostForm
+          onAddPost={handlePostDataReady}
+          ></PostForm>
         {/* add sort here */}
         <h4>{postTitle}</h4>
           <PostList posts={postData} onSelectPost={handlePost} />

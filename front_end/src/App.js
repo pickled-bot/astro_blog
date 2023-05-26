@@ -92,7 +92,6 @@ function App() {
   };
 
   const onPostDelete = (postid) => {
-
     return fetch(`${baseUrl}/posts/${postid}`, {
       method: 'DELETE'
     })
@@ -100,6 +99,7 @@ function App() {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
+      setPostData(postData.filter((post) => post.postid !== postid));
       return response.json();
     })
     .catch((error) => console.log(error));
@@ -146,7 +146,7 @@ function App() {
           ></PostForm>
         {/* add sort here */}
         <h4>{postTitle}</h4>
-          <PostList posts={postData} onSelectPost={handlePost} />
+          <PostList posts={postData} onSelectPost={handlePost} onDelete={onPostDelete} />
         </div>
       </main>
     </div>

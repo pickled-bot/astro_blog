@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Post from './Post.js';
 import '../style/postList.css';
 
-const PostList = ({posts, onSelectPost}) => {
+const PostList = ({posts, onSelectPost, onDelete}) => {
   if (!posts) return <div>loading...</div>;
   const postComponents = posts.map((post) => {
     return (
@@ -14,6 +14,7 @@ const PostList = ({posts, onSelectPost}) => {
         title = {post.title}
         body = {post.body}
         onSelectPost = {onSelectPost}
+        onDelete = {onDelete}
       />
     );
   });
@@ -23,6 +24,7 @@ const PostList = ({posts, onSelectPost}) => {
 PostList.propTypes = {
   posts: PropTypes.arrayOf(PropTypes.object),
   onSelectPost: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
 export default PostList; 

@@ -3,17 +3,32 @@ from flask_cors import CORS
 from app import db
 from .models.post import Post
 import datetime
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 blogs_bp = Blueprint("blogs_bp", __name__, url_prefix="/posts")
 
 CORS(blogs_bp)
+
+def authenticiate_and_authorize(funct):
+  def authenticiate_and_authorize_wrapper(*args, **kwargs):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+      abort(make_response({"message": "Unauthorized"}, 401))
+    if auth_header != "Bearer " + os.environ.get("AUTH_TOKEN"):
+      abort(make_response({"message": "Unauthorized"}, 401))
+    return funct(*args, **kwargs)
+  return authenticiate_and_authorize_wrapper
+
 
 @blogs_bp.route("/")
 def index():
   return render_template("index.html")
 
 @blogs_bp.route("", methods = ["POST"])
+# @authenticiate_and_authorize
 def handle_posts():
   request_body = request.get_json()
   current_date = datetime.datetime.now()
@@ -54,7 +69,7 @@ def replace_post_by_id(post_id):
   request_body = request.get_json()
   post = validate_post(post_id)
   
-  post.tile = request_body["title"]
+  post.title = request_body["title"]
   post.date = request_body["date"]
   post.body = request_body["body"]
 
@@ -63,6 +78,7 @@ def replace_post_by_id(post_id):
   return jsonify(post.to_dictionary())
 
 @blogs_bp.route("/<post_id>", methods=["DELETE"])
+# @authenticiate_and_authorize
 def delete_post_by_id(post_id):
   post = validate_post(post_id)
 

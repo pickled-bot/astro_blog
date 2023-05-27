@@ -49,7 +49,10 @@ const PostForm = ({onAddPost}) => {
           value={formData.body}
           onChange={onInput}
           ></textarea>
+          <label for="auth-token">password pls:</label>
+        <input type="text" id="auth-token" name="auth-token"></input>
           <button type="submit">Add Post</button>
+
     </form>
   );
 };

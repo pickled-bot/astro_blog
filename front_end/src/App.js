@@ -93,7 +93,10 @@ function App() {
 
   const onPostDelete = (postid) => {
     return fetch(`${baseUrl}/posts/${postid}`, {
-      method: 'DELETE'
+      method: 'DELETE',
+      headers: {
+        'Authorization': process.env.AUTH_TOKEN,
+      }
     })
     .then((response) => {
       if (!response.ok) {
@@ -111,7 +114,8 @@ function App() {
     return fetch(`${baseUrl}/posts`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': process.env.AUTH_TOKEN,
         },
         body: JSON.stringify(requestBody)
       })
